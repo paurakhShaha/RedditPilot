@@ -1,0 +1,18 @@
+# RedditPilot runtime and test dependencies
+# Tested with Python 3.14 on Windows; Python 3.12+ is supported.
+fastapi==0.162.0
+uvicorn==0.54.0
+SQLAlchemy==2.1.6
+pydantic==2.14.2
+pydantic-settings==2.16.2
+APScheduler==3.11.3
+google-genai==2.34.0
+praw==8.0.3
+python-dotenv==1.2.4
+alembic==1.20.1
+cryptography==50.0.2
+tzdata==2026.6
+
+# Tests (mocked Gemini and Reddit; no network calls)
+pytest==9.2.0
+httpx==0.28.1
