@@ -17,7 +17,9 @@ os.environ["DISABLE_SCHEDULER"] = "1"
 from cryptography.fernet import Fernet  # noqa: E402
 
 os.environ["APP_SECRET_KEY"] = Fernet.generate_key().decode()
-os.environ.pop("GEMINI_API_KEY", None)
+# config.py calls load_dotenv(), which does not override existing variables.
+# An empty value keeps a developer's real .env key out of the test process.
+os.environ["GEMINI_API_KEY"] = ""
 
 import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402

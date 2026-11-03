@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { api, qs } from "../api.js";
 import Icon from "../components/Icons.jsx";
 import {
@@ -953,6 +953,7 @@ function ManualPublishDialog({ draft, prepared, onClose, onPublished }) {
   const [note, setNote] = useState("");
   const [confirmed, setConfirmed] = useState(false);
   const [busy, setBusy] = useState(false);
+  const urlRef = useRef(null);
 
   const submit = async () => {
     if (!confirmed) return toast.warning("Confirm first", "Tick the confirmation once the post exists on Reddit.");
@@ -967,6 +968,38 @@ function ManualPublishDialog({ draft, prepared, onClose, onPublished }) {
       toast.error("Could not record publication", error.message);
     } finally {
       setBusy(false);
+    }
+  };
+
+  const handoff = async () => {
+    // Opened synchronously so the browser treats it as part of the click.
+    window.open(prepared.submit_url, "_blank", "noopener,noreferrer");
+    try {
+      await navigator.clipboard.writeText(prepared.body);
+      toast.success(
+        "Submit page opened",
+        "The title and body are prefilled and the body is on your clipboard as a fallback. Publish on Reddit, then paste the URL here."
+      );
+      window.setTimeout(() => urlRef.current?.focus(), 400);
+    } catch {
+      toast.info(
+        "Submit page opened",
+        "Clipboard access was blocked. Use Copy next to the body if the text is missing."
+      );
+    }
+  };
+
+  const pasteUrl = async () => {
+    try {
+      const text = (await navigator.clipboard.readText()) || "";
+      const match = text.match(/https?:\/\/(?:www\.)?reddit\.com\/r\/[^\s"'<>]+/i);
+      if (!match) {
+        return toast.warning("No Reddit link found", "Copy the post URL from Reddit, then click Paste again.");
+      }
+      setUrl(match[0]);
+      toast.success("URL pasted", "Check it matches the post, then confirm below.");
+    } catch {
+      return toast.warning("Clipboard unavailable", "Your browser blocked clipboard access. Paste the URL manually.");
     }
   };
 
@@ -996,9 +1029,9 @@ function ManualPublishDialog({ draft, prepared, onClose, onPublished }) {
               <div className="section-label">Copy for Reddit</div>
               <div className="field-hint">Disclosure {prepared.disclosure_included ? "is included in the body" : "was not found in the body"}.</div>
             </div>
-            <a className="btn btn-sm btn-outline" href={prepared.submit_url} target="_blank" rel="noreferrer">
-              Open submit page <Icon name="external" size={12} />
-            </a>
+            <Button size="sm" variant="primary" icon="external" onClick={handoff}>
+              Copy &amp; open Reddit
+            </Button>
           </div>
           <div className="card-body" style={{ padding: 14 }}>
             <div className="row-between" style={{ marginBottom: 5 }}>
@@ -1013,6 +1046,9 @@ function ManualPublishDialog({ draft, prepared, onClose, onPublished }) {
             <div className="preview-body" style={{ maxHeight: 220 }}>
               <p>{prepared.body}</p>
             </div>
+            <p className="field-hint" style={{ marginTop: 10 }}>
+              “Copy &amp; open Reddit” opens the prefilled submit page and copies the body. It never clicks Submit — you stay the publisher.
+            </p>
           </div>
         </div>
 
@@ -1021,8 +1057,21 @@ function ManualPublishDialog({ draft, prepared, onClose, onPublished }) {
         </Callout>
 
         <Field label="Reddit post URL">
-          <input className="input" value={url} onChange={(event) => setUrl(event.target.value)} placeholder="https://www.reddit.com/r/…/comments/…" />
+          <div className="row" style={{ gap: 8 }}>
+            <input
+              ref={urlRef}
+              className="input"
+              style={{ flex: 1 }}
+              value={url}
+              onChange={(event) => setUrl(event.target.value)}
+              placeholder="https://www.reddit.com/r/…/comments/…"
+            />
+            <Button size="sm" variant="outline" icon="copy" onClick={pasteUrl} type="button">Paste</Button>
+          </div>
         </Field>
+        <p className="field-hint" style={{ marginTop: -6 }}>
+          The clipboard is read only when you click Paste. Automatic detection is off.
+        </p>
         <Field label="Note" optional>
           <input className="input" value={note} onChange={(event) => setNote(event.target.value)} placeholder="Anything to remember about this publication" maxLength={1000} />
         </Field>

@@ -172,7 +172,7 @@ Paste the resulting refresh token into Settings. Keep it secret. Reddit's API te
 | Final confirmation | Paste URL and confirm | Explicit acknowledgement and **Submit once** |
 | Auto-retry | Not applicable | Never |
 
-In manual mode the app prepares the exact title and body, opens Reddit's submit page, and waits. You publish it yourself, then paste the full Reddit URL. The URL must be a `reddit.com/r/<that-subreddit>/comments/...` URL. The app validates it before recording the publication.
+In manual mode the app prepares the exact title and body. **Copy & open Reddit** opens the prefilled submit page in one click and copies the body as a fallback, then you publish it yourself. **Paste** fills the URL field from your clipboard only when you click it; automatic clipboard detection is off. The URL must be a `reddit.com/r/<that-subreddit>/comments/...` URL, and the app validates it before recording the publication. Nothing is submitted on your behalf.
 
 ## Approval lifecycle
 
